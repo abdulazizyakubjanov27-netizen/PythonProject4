@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Flexible Language Learning System</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f4f4;
+}
+
+header {
+    background: #111;
+    color: green;
+    padding: 15px;
+    text-align: center;
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    background: blue;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.card {
+    background: #eee;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+.hidden {
+    display: none;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+<h1> Flexible Language Learning System</h1>
+</header>
+
+<div class="container">
+
+<h2>Select Language:</h2>
+<button onclick="startTest('uz')">UZ</button>
+<button onclick="startTest('ru')">RU</button>
+<button onclick="startTest('en')">EN</button>
+<button onclick="startTest('de')">DE</button>
+
+<hr>
+
+<div id="quiz" class="hidden">
+<h2 id="question"></h2>
+
+<button onclick="answer(0)" id="btn0"></button>
+<button onclick="answer(1)" id="btn1"></button>
+<button onclick="answer(2)" id="btn2"></button>
+
+<p id="progress"></p>
+</div>
+
+<div id="resultBox" class="hidden">
+<h2 id="finalResult"></h2>
+<button onclick="restart()">Restart</button>
+</div>
+
+</div>
+
+<script>
+
+let lang = "";
+let current = 0;
+let score = 0;
+let wrong = 0;
+let mode = "vocab"; // vocab yoki grammar
+
+const data = {
+
+    en: {
+        vocab: [
+            {q: "What is 'Book'?", a: ["Daftar", "Kitob", "Qog'oz"], c: 1, exp: "Book = Kitob"},
+            {q: "Car translate?", a: ["Mashina", "Traktor", "Uy"], c: 0, exp: "Car = Mashina"},
+            {q: "House translate?", a: ["Uy", "Mashina", "Kitob"], c: 0, exp: "House = Uy"},
+            {q: "Book means?", a: ["Kitob", "Uy", "Mashina"], c: 0, exp: "Book = Kitob"},
+            {q: "Car means?", a: ["Uy", "Mashina", "Kitob"], c: 1, exp: "Car = Mashina"}
+        ],
+        grammar: [
+            {q: "Choose correct", a: ["I go school", "I go to school", "I goes"], c: 1, exp: "I go to school"},
+            {q: "Choose correct", a: ["He eat", "He eats", "He eating"], c: 1, exp: "He eats"},
+            {q: "Correct", a: ["She go", "She goes", "She going"], c: 1, exp: "She goes"},
+            {q: "Correct", a: ["They is", "They are", "They am"], c: 1, exp: "They are"},
+            {q: "Correct", a: ["I am student", "I is student", "I are student"], c: 0, exp: "I am student"}
+        ]
+    },
+
+    uz: {
+        vocab: [
+            {q: "'Book' nima?", a: ["Daftar", "Kitob", "Qog'oz"], c: 1, exp: "Book = Kitob"},
+            {q: "'Car' nima?", a: ["Mashina", "Uy", "Kitob"], c: 0, exp: "Car = Mashina"},
+            {q: "'House' nima?", a: ["Uy", "Mashina", "Kitob"], c: 0, exp: "House = Uy"},
+            {q: "'Kitob' inglizchasi?", a: ["Book", "Car", "House"], c: 0, exp: "Kitob = Book"},
+            {q: "'Mashina' inglizchasi?", a: ["Car", "Book", "House"], c: 0, exp: "Mashina = Car"}
+        ],
+        grammar: [
+            {q: "To‘g‘ri gap", a: ["Men maktab boraman", "Men maktabga boraman", "Men bor maktab"], c: 1, exp: "Maktabga boraman"},
+            {q: "To‘g‘ri gap", a: ["U ovqat yeydi", "U yeydi ovqat", "Ovqat u yeydi"], c: 0, exp: "U ovqat yeydi"},
+            {q: "To‘g‘ri gap", a: ["Biz boramiz", "Biz boradi", "Biz bor"], c: 0, exp: "Biz boramiz"},
+            {q: "To‘g‘ri gap", a: ["Ular keladi", "Ular kelaman", "Ular kelasan"], c: 0, exp: "Ular keladi"},
+            {q: "To‘g‘ri gap", a: ["Men o‘qiyman", "Men o‘qiydi", "Men o‘qisan"], c: 0, exp: "Men o‘qiyman"}
+        ]
+    },
+
+    ru: {
+        vocab: [
+            {q: "Что значит 'Книга'?", a: ["Car", "Book", "House"], c: 1, exp: "Книга = Book"},
+            {q: "Машина это?", a: ["Car", "House", "Book"], c: 0, exp: "Машина = Car"},
+            {q: "Дом это?", a: ["House", "Car", "Book"], c: 0, exp: "Дом = House"},
+            {q: "'Book' это?", a: ["Книга", "Дом", "Машина"], c: 0, exp: "Book = Книга"},
+            {q: "'Car' это?", a: ["Машина", "Дом", "Книга"], c: 0, exp: "Car = Машина"}
+        ],
+        grammar: [
+            {q: "Правильное", a: ["Я идти школа", "Я иду в школу", "Я идет школа"], c: 1, exp: "Я иду в школу"},
+            {q: "Правильное", a: ["Он ест", "Он есть", "Он едать"], c: 0, exp: "Он ест"},
+            {q: "Правильное", a: ["Мы идем", "Мы идет", "Мы идти"], c: 0, exp: "Мы идем"},
+            {q: "Правильное", a: ["Они идут", "Они идет", "Они идти"], c: 0, exp: "Они идут"},
+            {q: "Правильное", a: ["Я читаю", "Я читает", "Я читать"], c: 0, exp: "Я читаю"}
+        ]
+    },
+
+    de: {
+        vocab: [
+            {q: "Was ist 'Buch'?", a: ["Car", "Book", "House"], c: 1, exp: "Buch = Book"},
+            {q: "Auto bedeutet?", a: ["Mashina", "Uy", "Kitob"], c: 0, exp: "Auto = Mashina"},
+            {q: "Haus bedeutet?", a: ["Uy", "Mashina", "Kitob"], c: 0, exp: "Haus = Uy"},
+            {q: "'Book' auf Deutsch?", a: ["Buch", "Haus", "Auto"], c: 0, exp: "Book = Buch"},
+            {q: "'Car' auf Deutsch?", a: ["Auto", "Haus", "Buch"], c: 0, exp: "Car = Auto"}
+        ],
+        grammar: [
+            {q: "Richtig", a: ["Ich gehen Schule", "Ich gehe zur Schule", "Ich geht Schule"], c: 1, exp: "Ich gehe zur Schule"},
+            {q: "Richtig", a: ["Er isst", "Er essen", "Er esse"], c: 0, exp: "Er isst"},
+            {q: "Richtig", a: ["Wir gehen", "Wir geht", "Wir gehenst"], c: 0, exp: "Wir gehen"},
+            {q: "Richtig", a: ["Sie gehen", "Sie geht", "Sie gehst"], c: 0, exp: "Sie gehen"},
+            {q: "Richtig", a: ["Ich lese", "Ich liest", "Ich lesen"], c: 0, exp: "Ich lese"}
+        ]
+    }
+
+};
+
+// boshqa tillar ham xuddi shu struktura (sen keyin copy qilib to‘ldirasan)
+
+function startTest(l) {
+    lang = l;
+    current = 0;
+    score = 0;
+    wrong = 0;
+    mode = "vocab";
+
+    document.getElementById("quiz").classList.remove("hidden");
+    document.getElementById("resultBox").classList.add("hidden");
+
+    loadQuestion();
+}
+
+function getCurrentData() {
+    return data[lang][mode];
+}
+
+function loadQuestion() {
+    let q = getCurrentData()[current];
+
+    document.getElementById("question").innerText = q.q;
+    document.getElementById("btn0").innerText = q.a[0];
+    document.getElementById("btn1").innerText = q.a[1];
+    document.getElementById("btn2").innerText = q.a[2];
+
+    document.getElementById("progress").innerText =
+        (current + 1) + " / " + getCurrentData().length;
+}
+
+function answer(i) {
+    let q = getCurrentData()[current];
+
+    if (i === q.c) {
+        score++;
+        alert("To‘g‘ri!");
+    } else {
+        wrong++;
+        alert("Xato!\nTo‘g‘ri javob: " + q.a[q.c] + "\nIzoh: " + q.exp);
+    }
+
+    current++;
+
+    if (current < getCurrentData().length) {
+        loadQuestion();
+    } else {
+        // agar vocab tugasa → grammar ga o'tadi
+        if (mode === "vocab") {
+            mode = "grammar";
+            current = 0;
+            alert("Endi Grammar Test boshlanadi!");
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+}
+
+function showResult() {
+    document.getElementById("quiz").classList.add("hidden");
+    document.getElementById("resultBox").classList.remove("hidden");
+
+    let total = score + wrong;
+    let percent = Math.floor((score / total) * 100);
+
+    let level = "A1";
+    if (percent > 60) level = "A2";
+    if (percent > 80) level = "B1";
+
+    document.getElementById("finalResult").innerText =
+        `Score: ${score}/${total}
+Correct: ${score}
+Wrong: ${wrong}
+Result: ${percent}%
+Level: ${level}`;
+}
+
+function restart() {
+    location.reload();
+}
+
+</script>
+
+</body>
+</html>
+
+
+
+<!--<script>-->
+
+<!--let lang = "";-->
+<!--let current = 0;-->
+<!--let score = 0;-->
+<!--let wrong = 0;-->
+<!--let mode = "vocab"; // vocab yoki grammar-->
+
+<!--const data = {-->
+<!--    en: {-->
+<!--        vocab: [-->
+<!--            {q: "What is 'Book'?", a: ["Daftar", "Kitob", "Qog'oz"], c: 1, exp: "Book = Kitob"},-->
+<!--            {q: "Car translate?", a: ["Mashina", "Traktor", "Uy"], c: 0, exp: "Car = Mashina"},-->
+<!--            {q: "House translate?", a: ["Uy", "Mashina", "Kitob"], c: 0, exp: "House = Uy"},-->
+<!--            {q: "Book means?", a: ["Kitob", "Uy", "Mashina"], c: 0, exp: "Book = Kitob"},-->
+<!--            {q: "Car means?", a: ["Uy", "Mashina", "Kitob"], c: 1, exp: "Car = Mashina"}-->
+<!--        ],-->
+<!--        grammar: [-->
+<!--            {q: "Choose correct", a: ["I go school", "I go to school", "I goes"], c: 1, exp: "To'g'ri: I go to school"},-->
+<!--            {q: "Choose correct", a: ["He eat", "He eats", "He eating"], c: 1, exp: "He eats (3rd person)"},-->
+<!--            {q: "Correct", a: ["She go", "She goes", "She going"], c: 1, exp: "She goes"},-->
+<!--            {q: "Correct", a: ["They is", "They are", "They am"], c: 1, exp: "They are"},-->
+<!--            {q: "Correct", a: ["I am student", "I is student", "I are student"], c: 0, exp: "I am student"},-->
+<!--            {q: "Correct", a: ["He have", "He has", "He haves"], c: 1, exp: "He has"},-->
+<!--            {q: "Correct", a: ["We goes", "We go", "We going"], c: 1, exp: "We go"},-->
+<!--            {q: "Correct", a: ["She do", "She does", "She doing"], c: 1, exp: "She does"},-->
+<!--            {q: "Correct", a: ["I has", "I have", "I haves"], c: 1, exp: "I have"},-->
+<!--            {q: "Correct", a: ["They goes", "They go", "They going"], c: 1, exp: "They go"}-->
+<!--        ]-->
+<!--    }-->
+<!--};-->
+
+<!--// boshqa tillar ham xuddi shu struktura (sen keyin copy qilib to‘ldirasan)-->
+
+<!--function startTest(l) {-->
+<!--    lang = l;-->
+<!--    current = 0;-->
+<!--    score = 0;-->
+<!--    wrong = 0;-->
+<!--    mode = "vocab";-->
+
+<!--    document.getElementById("quiz").classList.remove("hidden");-->
+<!--    document.getElementById("resultBox").classList.add("hidden");-->
+
+<!--    loadQuestion();-->
+<!--}-->
+
+<!--function getCurrentData() {-->
+<!--    return data[lang][mode];-->
+<!--}-->
+
+<!--function loadQuestion() {-->
+<!--    let q = getCurrentData()[current];-->
+
+<!--    document.getElementById("question").innerText = q.q;-->
+<!--    document.getElementById("btn0").innerText = q.a[0];-->
+<!--    document.getElementById("btn1").innerText = q.a[1];-->
+<!--    document.getElementById("btn2").innerText = q.a[2];-->
+
+<!--    document.getElementById("progress").innerText =-->
+<!--        (current + 1) + " / " + getCurrentData().length;-->
+<!--}-->
+
+<!--function answer(i) {-->
+<!--    let q = getCurrentData()[current];-->
+
+<!--    if (i === q.c) {-->
+<!--        score++;-->
+<!--        alert("✅ To‘g‘ri!");-->
+<!--    } else {-->
+<!--        wrong++;-->
+<!--        alert("❌ Xato!\nTo‘g‘ri javob: " + q.a[q.c] + "\nIzoh: " + q.exp);-->
+<!--    }-->
+
+<!--    current++;-->
+
+<!--    if (current < getCurrentData().length) {-->
+<!--        loadQuestion();-->
+<!--    } else {-->
+<!--        // agar vocab tugasa → grammar ga o'tadi-->
+<!--        if (mode === "vocab") {-->
+<!--            mode = "grammar";-->
+<!--            current = 0;-->
+<!--            alert("📘 Endi Grammar Test boshlanadi!");-->
+<!--            loadQuestion();-->
+<!--        } else {-->
+<!--            showResult();-->
+<!--        }-->
+<!--    }-->
+<!--}-->
+
+<!--function showResult() {-->
+<!--    document.getElementById("quiz").classList.add("hidden");-->
+<!--    document.getElementById("resultBox").classList.remove("hidden");-->
+
+<!--    let total = score + wrong;-->
+<!--    let percent = Math.floor((score / total) * 100);-->
+
+<!--    let level = "A1";-->
+<!--    if (percent > 60) level = "A2";-->
+<!--    if (percent > 80) level = "B1";-->
+
+<!--    document.getElementById("finalResult").innerText =-->
+<!--        `Score: ${score}/${total}-->
+<!--Correct: ${score}-->
+<!--Wrong: ${wrong}-->
+<!--Result: ${percent}%-->
+<!--Level: ${level}`;-->
+<!--}-->
+
+<!--function restart() {-->
+<!--    location.reload();-->
+<!--}-->
+
+<!--</script>-->

@@ -1,0 +1,47 @@
+mini_posting/
+│
+├── server.py
+├── migrate.py
+│
+├── sockets/
+│   ├── __init__.py
+│   └── router.py
+│
+├── handlers/
+│   ├── __init__.py
+│   ├── home.py
+│   ├── create_post.py
+│   ├── search.py
+│   └── not_found.py
+│
+├── db/
+│   ├── __init__.py
+│   ├── connection.py
+│   └── migrations/
+│       ├── 001_create_vlogs.sql
+│       └── 002_add_created_at.sql
+│
+└── templates/
+    ├── index.html
+    └── style.css
+
+
+# ikkinchi project
+
+
+mini_posting/
+
+│
+
+├── db/
+
+│   ├── connection.py
+
+│   ├── migrate.py
+
+│   └── migrations/
+
+│       ├── 001_create_posts.sql
+
+│       └── 002_add_created_at.sql
+

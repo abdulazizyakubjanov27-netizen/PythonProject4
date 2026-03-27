@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Language Learning Home</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #f4f4f4;
+}
+
+header {
+    background: #111;
+    color: green;
+    padding: 15px;
+    text-align: center;
+}
+
+.container {
+    width: 80%;
+    margin: 20px auto;
+    background: blue;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+button {
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.card {
+    background: #eee;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+</style>
+
+</head>
+<body>
+
+<header>
+<h1>Language Learning App</h1>
+</header>
+
+<div class="container">
+
+<h2>Select Language:</h2>
+<button onclick="setLang('uz')">UZ</button>
+<button onclick="setLang('ru')">RU</button>
+<button onclick="setLang('en')">EN</button>
+<button onclick="setLang('de')">DE</button>
+
+<hr>
+
+<h2 id="title">Vocabulary</h2>
+
+<div id="words"></div>
+
+<hr>
+
+<h2>Test</h2>
+<p id="question"></p>
+
+<button onclick="answer(0)">A</button>
+<button onclick="answer(1)">B</button>
+<button onclick="answer(2)">C</button>
+
+<p id="result"></p>
+
+</div>
+
+<script>
+
+let lang = "en";
+let score = 0;
+
+const data = {
+    en: {
+        words: ["A - House - Uy", "B - Book - Kitob", "C - Car - Mashina"],
+        question: "What is 'Book'?",
+        answers: ["Mashina", "Kitob", "Uy"],
+        correct: 1
+    },
+    uz: {
+        words: ["A - Uy - House", "B - Kitob - Book", "C - Mashina - Car"],
+        question: "'Kitob' nima?",
+        answers: ["Car", "Book", "House"],
+        correct: 1
+    },
+    ru: {
+        words: ["A - Дом - House", "B - Книга - Book", "C - Машина - Car"],
+        question: "Что значит 'Книга'?",
+        answers: ["Car", "Book", "House"],
+        correct: 1
+    },
+    de: {
+        words: ["A - Haus - House", "B - Buch - Book", "C - Auto - Car"],
+        question: "Was bedeutet 'Buch'?",
+        answers: ["Car", "Book", "House"],
+        correct: 1
+    }
+};
+
+function setLang(l) {
+    lang = l;
+    loadContent();
+}
+
+function loadContent() {
+    let w = data[lang].words;
+    let html = "";
+
+    w.forEach(word => {
+        html += `<div class="card">${word}</div>`;
+    });
+
+    document.getElementById("words").innerHTML = html;
+    document.getElementById("question").innerText = data[lang].question;
+    document.getElementById("result").innerText = "";
+}
+
+function answer(i) {
+    if (i === data[lang].correct) {
+        score++;
+        document.getElementById("result").innerText = "Correct!";
+    } else {
+        document.getElementById("result").innerText = "Error!";
+    }
+}
+
+loadContent();
+
+</script>
+
+</body>
+</html>
